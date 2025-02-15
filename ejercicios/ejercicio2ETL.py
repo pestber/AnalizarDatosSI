@@ -7,11 +7,12 @@ import json
 def ejercicio2ETL():
     with open("datos.json", "r", encoding="utf-8") as file:
         data = json.load(file)
-
+    #print(data)
+    #print(data["tickets_emitidos"])
     con = sqlite3.connect("incidentes.db")
     cur = con.cursor()
 
-    cur.execute("CREATE TABLE IF NOT EXISTS baseDeDatosIncidentes("
+    cur.execute("CREATE TABLE IF NOT EXISTS incidentes("
                 "id_incidente INTEGER PRIMARY KEY AUTOINCREMENT,"
                 "cliente INTEGER,"
                 "fecha_apertura TEXT,"
@@ -27,7 +28,7 @@ def ejercicio2ETL():
                 "id_emp INTEGER,"
                 "fecha TEXT,"
                 "tiempo FLOAT,"
-                "FOREIGN KEY (id_incidente) REFERENCES baseDeDatosIncidentes(id_incidente)"
+                "FOREIGN KEY (id_incidente) REFERENCES incidentes(id_incidente)"
                 ");")
 
     #Insertamos los datos en la base
@@ -44,7 +45,7 @@ def ejercicio2ETL():
                             (id_incidente, int(contacto["id_emp"]), contacto["fecha"], float(contacto["tiempo"])))
     con.commit()
     con.close()
-
+ejercicio2ETL()
   #realizar consultas con pandas
 def analizarDatos():
     con = sqlite3.connect("incidentes.db")
@@ -56,7 +57,7 @@ def analizarDatos():
     df_contactos = pd.read_sql_query(query_contactos, con)
 
     con.close()
-    
+
 
 
 
