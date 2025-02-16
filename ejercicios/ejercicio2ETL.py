@@ -58,22 +58,28 @@ def analizarDatos():
 
     #Numero de muestras totales.
     print("Numero de muestras totales: ", df_incidentes["id_incidente"].count())
+
     # Media y desviación estándar del total de incidentes en los que ha habido una valoración mayor o igual a 5 por parte del cliente.
     print("Media de incidentes con valoración mayor o igual a 5: ", df_incidentes[df_incidentes["satisfaccion_cliente"] >= 5]["id_incidente"].count())
     print("Desviación estándar de incidentes con valoración mayor o igual a 5: ", df_incidentes[df_incidentes["satisfaccion_cliente"] >= 5]["id_incidente"].std())
+
     # Media y desviación estándar del total del número de incidentes por cliente.
     print("Media de incidentes por cliente: ", df_incidentes.groupby("cliente").count().mean()["id_incidente"])
     print("Desviación estándar de incidentes por cliente: ", df_incidentes.groupby("cliente").count().std()["id_incidente"])
+
     # Media y desviación estándar del número de horas totales realizadas en cada incidente.
     print("Media de horas totales realizadas: ", df_contactos.groupby("id_incidente").sum()["tiempo"].mean())
     print("Desviación estándar de horas totales realizadas: ", df_contactos.groupby("id_incidente").sum()["tiempo"].std())
+
     # Valor mínimo y valor máximo del total de horas realizadas por los empleados.
     print("Valor mínimo de horas realizadas por empleado: ", df_contactos.groupby("id_emp").sum()["tiempo"].min())
     print("Valor máximo de horas realizadas por empleado: ", df_contactos.groupby("id_emp").sum()["tiempo"].max())
+
     # Valor mínimo y valor máximo del tiempo entre apertura y cierre de incidente.
     df_incidentes["fecha_apertura"] = pd.to_datetime(df_incidentes["fecha_apertura"])
     df_incidentes["fecha_cierre"] = pd.to_datetime(df_incidentes["fecha_cierre"])
     df_incidentes["tiempo_incidente"] = df_incidentes["fecha_cierre"] - df_incidentes["fecha_apertura"]
+
     # Valor mínimo y valor máximo del número de incidentes atendidos por cada empleado
     print("Valor mínimo de incidentes atendidos por empleado: ", df_contactos.groupby("id_emp").count()["id_incidente"].min())
     con.close()
