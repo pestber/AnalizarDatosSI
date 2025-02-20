@@ -11,39 +11,105 @@ def ejercicio2ETL():
     #print(data["tickets_emitidos"])
     con = sqlite3.connect("incidentes.db")
     cur = con.cursor()
+    cur.execute("PRAGMA foreign_keys = ON;")
+    #creamos las tablas con cur.execute con la info de data.json
+    # Crear la tabla de clientes
+    cur.execute("CREATE TABLE IF NOT EXISTS clientes ("
+                "id_cliente INTEGER PRIMARY KEY,"
+                "nombre TEXT,"
+                "telefono INTEGER,"
+                "provincia TEXT"
+                ");")
+    # Crear la tabla de tipos de incidentes
+    cur.execute("CREATE TABLE IF NOT EXISTS tipos_incidentes ("
+                "id_inci INTEGER PRIMARY KEY,"
+                "nombre TEXT"
+                ");")
+    # Crear la tabla de empleados
+    cur.execute("CREATE TABLE IF NOT EXISTS empleados ("
+                "id_emp INTEGER PRIMARY KEY,"
+                "nombre TEXT,"
+                "nivel INTEGER,"
+                "fecha_contrato TEXT"
+                ");")
 
-    cur.execute("CREATE TABLE IF NOT EXISTS incidentes("
-                "id_incidente INTEGER PRIMARY KEY AUTOINCREMENT,"
-                "cliente INTEGER,"
+    cur.execute("CREATE TABLE IF NOT EXISTS tickets_emitidos("
+                "id_ticket_emitido INTEGER PRIMARY KEY AUTOINCREMENT,"
+                "id_cliente INTEGER,"
                 "fecha_apertura TEXT,"
                 "fecha_cierre TEXT,"
                 "es_mantenimiento BOOLEAN,"
                 "satisfaccion_cliente INTEGER,"
-                "tipo_incidencia integer"
+                "tipo_incidencia INTEGER,"
+                "FOREIGN KEY (id_cliente) REFERENCES clientes(id_cliente),"
+                "FOREIGN KEY (tipo_incidencia) REFERENCES tipos_incidencias(id_inci)"
                 ");")
 
     cur.execute("CREATE TABLE IF NOT EXISTS  contactos_empleados("
                 "id_contacto INTEGER PRIMARY KEY AUTOINCREMENT,"
-                "id_incidente INTEGER,"
+                "id_ticket_emitido INTEGER,"
                 "id_emp INTEGER,"
                 "fecha TEXT,"
                 "tiempo FLOAT,"
-                "FOREIGN KEY (id_incidente) REFERENCES incidentes(id_incidente)"
+                "FOREIGN KEY (id_emp) REFERENCES empleados(id_emp),"
+                "FOREIGN KEY (id_ticket_emitido) REFERENCES tickets_emitidos(id_ticket_emitido)"
                 ");")
 
-    #Insertamos los datos en la base
-    for ticket in data["tickets_emitidos"]:
-        cur.execute("INSERT OR IGNORE INTO incidentes (cliente, fecha_apertura, fecha_cierre, es_mantenimiento, satisfaccion_cliente, tipo_incidencia)"\
-                    "VALUES ('%d', '%s', '%s', '%d', '%d', '%d')" %
-                    (int(ticket["cliente"]), ticket["fecha_apertura"], ticket["fecha_cierre"], int(ticket["es_mantenimiento"]),
-                     int(ticket["satisfaccion_cliente"]), int(ticket["tipo_incidencia"])))
-        id_incidente = cur.lastrowid
-        if "contactos_con_empleados" in ticket and ticket["contactos_con_empleados"]:
-            for contacto in ticket["contactos_con_empleados"]:
-                cur.execute("INSERT OR IGNORE INTO contactos_empleados (id_incidente, id_emp, fecha, tiempo) "
-                            "VALUES ('%d', '%d', '%s', '%.2f')" %
-                            (id_incidente, int(contacto["id_emp"]), contacto["fecha"], float(contacto["tiempo"])))
+#Insertamos los datos en la base de datos
+
+    # Insertar los datos de clientes
+    if "clientes" in data:
+        for cliente in data["clientes"]:
+            cur.execute("INSERT OR IGNORE INTO clientes (id_cliente, nombre, telefono, provincia) " \
+                        "VALUES ('%d', '%s', '%d', '%s')" %
+                        (int(cliente["id_cli"]), cliente["nombre"], int(cliente["telefono"]), cliente["provincia"]))
+
+    # Insertar los datos de empleados
+    if "empleados" in data:
+        for empleado in data["empleados"]:
+            cur.execute("INSERT OR IGNORE INTO empleados (id_emp, nombre, nivel, fecha_contrato) " \
+                        "VALUES ('%d', '%s', '%d', '%s')" %
+                        (int(empleado["id_emp"]), empleado["nombre"], int(empleado["nivel"]),
+                         empleado["fecha_contrato"]))
+
+    # Insertar los datos de tipos_incidentes
+    if "tipos_incidentes" in data:
+        for tipo in data["tipos_incidentes"]:
+            cur.execute("INSERT OR IGNORE INTO tipos_incidentes (id_inci, nombre) " \
+                        "VALUES ('%d', '%s')" %
+                        (int(tipo["id_inci"]), tipo["nombre"]))
+
+    # Insertar los datos de tickets_emitidos y sus contactos
+    if "tickets_emitidos" in data:
+        for ticket in data["tickets_emitidos"]:
+            cur.execute(
+                "INSERT OR IGNORE INTO tickets_emitidos (id_cliente, fecha_apertura, fecha_cierre, es_mantenimiento, satisfaccion_cliente, tipo_incidencia) " \
+                "VALUES ('%d', '%s', '%s', '%d', '%d', '%d')" %
+                (int(ticket["cliente"]), ticket["fecha_apertura"], ticket["fecha_cierre"],
+                 int(ticket["es_mantenimiento"]),
+                 int(ticket["satisfaccion_cliente"]), int(ticket["tipo_incidencia"])))
+
+            id_ticket_emitido = cur.lastrowid  # Obtener el ID del ticket recién insertado
+
+            # Insertar los contactos con empleados
+            if "contactos_con_empleados" in ticket:
+                for contacto in ticket["contactos_con_empleados"]:
+                    cur.execute("INSERT OR IGNORE INTO contactos_empleados (id_ticket_emitido, id_emp, fecha, tiempo) " \
+                                "VALUES ('%d', '%d', '%s', '%.2f')" %
+                                (id_ticket_emitido, int(contacto["id_emp"]), contacto["fecha"],
+                                 float(contacto["tiempo"])))
+
+    # Guardar los cambios y cerrar la conexión
     con.commit()
+    """
+        cur.execute("SELECT name FROM sqlite_master WHERE type='table';")
+        tablas = cur.fetchall()
+    
+        print("Tablas en la base de datos:")
+        for tabla in tablas:
+            print(tabla[0])
+    """
+
     con.close()
 
   #realizar consultas con pandas
@@ -85,7 +151,7 @@ def analizarDatos():
     con.close()
 
 ejercicio2ETL()
-analizarDatos()
+#analizarDatos()
 
 
 
