@@ -115,43 +115,52 @@ def ejercicio2ETL():
   #realizar consultas con pandas
 def analizarDatos():
     con = sqlite3.connect("incidentes.db")
-
-    query_incidentes = "SELECT * FROM incidentes WHERE cliente IS NOT NULL;"
-    query_contactos = "SELECT * FROM contactos_empleados WHERE id_incidente IN (SELECT id_incidente FROM incidentes);"
-
-    df_incidentes = pd.read_sql_query(query_incidentes, con)
+    cur = con.cursor()
+    query_tickets = "SELECT * FROM tickets_emitidos;"
+    query_contactos = "SELECT * FROM contactos_empleados;"
+    df_tickets = pd.read_sql_query(query_tickets, con)
     df_contactos = pd.read_sql_query(query_contactos, con)
 
+    # Después, será necesario leer los datos desde la BBDD (usando
+    # diferentes consultas) almacenando los resultados en un DataFrame
+    # para poder manipularlos.
+
     #Numero de muestras totales.
-    print("Numero de muestras totales: ", df_incidentes["id_incidente"].count())
+    print("Numero de muestras de tickets_emitidos: ", df_tickets['id_ticket_emitido'].count())
+    print("Numero de muestras de contactos_empleados: ", df_contactos['id_contacto'].count())
 
-    # Media y desviación estándar del total de incidentes en los que ha habido una valoración mayor o igual a 5 por parte del cliente.
-    print("Media de incidentes con valoración mayor o igual a 5: ", df_incidentes[df_incidentes["satisfaccion_cliente"] >= 5]["id_incidente"].count())
-    print("Desviación estándar de incidentes con valoración mayor o igual a 5: ", df_incidentes[df_incidentes["satisfaccion_cliente"] >= 5]["id_incidente"].std())
+    #Media y desviación estándar del total de incidentes en los que ha habido una valoración mayor o igual a 5 por parte del cliente.
+    df_tickets_satisfaccion = df_tickets[df_tickets['satisfaccion_cliente'] >= 5]
+    print("Media de incidentes con valoración mayor o igual a 5: ", df_tickets_satisfaccion['satisfaccion_cliente'].mean())
+    print("Desviación estándar de incidentes con valoración mayor o igual a 5: ", df_tickets_satisfaccion['satisfaccion_cliente'].std())
 
-    # Media y desviación estándar del total del número de incidentes por cliente.
-    print("Media de incidentes por cliente: ", df_incidentes.groupby("cliente").count().mean()["id_incidente"])
-    print("Desviación estándar de incidentes por cliente: ", df_incidentes.groupby("cliente").count().std()["id_incidente"])
+    #Media y desviación estándar del total del número de incidentes por cliente.
+    print("Media de incidentes por cliente: ", df_tickets['id_cliente'].value_counts().mean())
+    print("Desviación estándar de incidentes por cliente: ", df_tickets['id_cliente'].value_counts().std())
 
     # Media y desviación estándar del número de horas totales realizadas en cada incidente.
-    print("Media de horas totales realizadas: ", df_contactos.groupby("id_incidente").sum()["tiempo"].mean())
-    print("Desviación estándar de horas totales realizadas: ", df_contactos.groupby("id_incidente").sum()["tiempo"].std())
+    df_contactos_tiempo = df_contactos.groupby('id_ticket_emitido').sum()
+    print("Media de horas totales realizadas en cada incidente: ", df_contactos_tiempo['tiempo'].mean())
+    print("Desviación estándar de horas totales realizadas en cada incidente: ", df_contactos_tiempo['tiempo'].std())
 
     # Valor mínimo y valor máximo del total de horas realizadas por los empleados.
-    print("Valor mínimo de horas realizadas por empleado: ", df_contactos.groupby("id_emp").sum()["tiempo"].min())
-    print("Valor máximo de horas realizadas por empleado: ", df_contactos.groupby("id_emp").sum()["tiempo"].max())
+    print("Valor mínimo de horas realizadas por los empleados: ", df_contactos['tiempo'].min())
+    print("Valor máximo de horas realizadas por los empleados: ", df_contactos['tiempo'].max())
 
-    # Valor mínimo y valor máximo del tiempo entre apertura y cierre de incidente.
-    df_incidentes["fecha_apertura"] = pd.to_datetime(df_incidentes["fecha_apertura"])
-    df_incidentes["fecha_cierre"] = pd.to_datetime(df_incidentes["fecha_cierre"])
-    df_incidentes["tiempo_incidente"] = df_incidentes["fecha_cierre"] - df_incidentes["fecha_apertura"]
+    # Valor mínimo y valor máximo del empo entre apertura y cierre de incidente.
+    df_tickets['fecha_apertura'] = pd.to_datetime(df_tickets['fecha_apertura'])
+    df_tickets['fecha_cierre'] = pd.to_datetime(df_tickets['fecha_cierre'])
+    df_tickets['tiempo_total'] = df_tickets['fecha_cierre'] - df_tickets['fecha_apertura']
+    print("Valor mínimo de tiempo entre apertura y cierre de incidente: ", df_tickets['tiempo_total'].min())
+    print("Valor máximo de tiempo entre apertura y cierre de incidente: ", df_tickets['tiempo_total'].max())
 
     # Valor mínimo y valor máximo del número de incidentes atendidos por cada empleado
-    print("Valor mínimo de incidentes atendidos por empleado: ", df_contactos.groupby("id_emp").count()["id_incidente"].min())
-    con.close()
+    print("Valor mínimo de incidentes atendidos por cada empleado: ", df_contactos['id_emp'].value_counts().min())
+    print("Valor máximo de incidentes atendidos por cada empleado: ", df_contactos['id_emp'].value_counts().max())
+
 
 ejercicio2ETL()
-#analizarDatos()
+analizarDatos()
 
 
 
