@@ -42,7 +42,7 @@ def ejercicio2ETL():
                 "satisfaccion_cliente INTEGER,"
                 "tipo_incidencia INTEGER,"
                 "FOREIGN KEY (id_cliente) REFERENCES clientes(id_cliente),"
-                "FOREIGN KEY (tipo_incidencia) REFERENCES tipos_incidencias(id_inci)"
+                "FOREIGN KEY (tipo_incidencia) REFERENCES tipos_incidentes(id_inci)"
                 ");")
 
     cur.execute("CREATE TABLE IF NOT EXISTS  contactos_empleados("
