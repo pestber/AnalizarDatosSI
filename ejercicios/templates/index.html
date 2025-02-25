@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+     <h1>Graficos</h1>
+
+    <h2>Top 5 Clientes Críticos</h2>
+    <div id="grafico"></div>
+</body>
+
+<script>
+        var grafico = JSON.parse({{ grafico | safe }})
+
+
+        Plotly.newPlot('grafico', grafico.data, grafico.layout)
+
+
+    </script>
+</html>
