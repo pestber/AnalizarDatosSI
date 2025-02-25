@@ -118,41 +118,47 @@ def analizarDatos():
     cur = con.cursor()
     query_tickets = "SELECT * FROM tickets_emitidos;"
     query_contactos = "SELECT * FROM contactos_empleados;"
+    query_tickets_contactos = "SELECT * FROM tickets_emitidos JOIN contactos_empleados ON tickets_emitidos.id_ticket_emitido = contactos_empleados.id_ticket_emitido;"
+
+    df_tickets_contactos = pd.read_sql_query(query_tickets_contactos, con)
     df_tickets = pd.read_sql_query(query_tickets, con)
     df_contactos = pd.read_sql_query(query_contactos, con)
-
     # Después, será necesario leer los datos desde la BBDD (usando
     # diferentes consultas) almacenando los resultados en un DataFrame
     # para poder manipularlos.
 
     #Numero de muestras totales.
-    print("Numero de muestras de tickets_emitidos: ", df_tickets['id_ticket_emitido'].count())
-    print("Numero de muestras de contactos_empleados: ", df_contactos['id_contacto'].count())
-
+    print("Numero de muestras totales: ", len(df_tickets_contactos))
+    print()
+    
     #Media y desviación estándar del total de incidentes en los que ha habido una valoración mayor o igual a 5 por parte del cliente.
     df_tickets_satisfaccion = df_tickets[df_tickets['satisfaccion_cliente'] >= 5]
     print("Media de incidentes con valoración mayor o igual a 5: ", df_tickets_satisfaccion['satisfaccion_cliente'].mean())
     print("Desviación estándar de incidentes con valoración mayor o igual a 5: ", df_tickets_satisfaccion['satisfaccion_cliente'].std())
+    print()
 
     #Media y desviación estándar del total del número de incidentes por cliente.
     print("Media de incidentes por cliente: ", df_tickets['id_cliente'].value_counts().mean())
     print("Desviación estándar de incidentes por cliente: ", df_tickets['id_cliente'].value_counts().std())
+    print()
 
     # Media y desviación estándar del número de horas totales realizadas en cada incidente.
-    df_contactos_tiempo = df_contactos.groupby('id_ticket_emitido').sum()
-    print("Media de horas totales realizadas en cada incidente: ", df_contactos_tiempo['tiempo'].mean())
-    print("Desviación estándar de horas totales realizadas en cada incidente: ", df_contactos_tiempo['tiempo'].std())
+    print("Media del total de horas realizadas por los empleados: ", df_tickets_contactos['tiempo'].mean())
+    print("Desviación estándar del total de horas realizadas por los empleados: ", df_tickets_contactos['tiempo'].std())
+    print()
 
     # Valor mínimo y valor máximo del total de horas realizadas por los empleados.
     print("Valor mínimo de horas realizadas por los empleados: ", df_contactos['tiempo'].min())
     print("Valor máximo de horas realizadas por los empleados: ", df_contactos['tiempo'].max())
+    print()
 
-    # Valor mínimo y valor máximo del empo entre apertura y cierre de incidente.
+    # Valor mínimo y valor máximo del tiempo entre apertura y cierre de incidente.
     df_tickets['fecha_apertura'] = pd.to_datetime(df_tickets['fecha_apertura'])
     df_tickets['fecha_cierre'] = pd.to_datetime(df_tickets['fecha_cierre'])
     df_tickets['tiempo_total'] = df_tickets['fecha_cierre'] - df_tickets['fecha_apertura']
     print("Valor mínimo de tiempo entre apertura y cierre de incidente: ", df_tickets['tiempo_total'].min())
     print("Valor máximo de tiempo entre apertura y cierre de incidente: ", df_tickets['tiempo_total'].max())
+    print()
 
     # Valor mínimo y valor máximo del número de incidentes atendidos por cada empleado
     print("Valor mínimo de incidentes atendidos por cada empleado: ", df_contactos['id_emp'].value_counts().min())
