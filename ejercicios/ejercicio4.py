@@ -10,7 +10,7 @@ def prueba():
     conn = sqlite3.connect('incidentes.db')
 
 
-    incidentes = pd.read_sql_query("SELECT * from incidentes", conn)
+    incidentes = pd.read_sql_query("SELECT * from tickets_emitidos", conn)
     clientes = pd.read_sql_query("SELECT * from clientes", conn)
     contactos=pd.read_sql_query("SELECT * from contactos_empleados", conn)
     empleados=pd.read_sql_query("SELECT * from empleados", conn)
@@ -25,9 +25,9 @@ def grafico_criticos():
 
     conn=sqlite3.connect('incidentes.db')
 
-    incidentes=pd.read_sql_query("SELECT * from incidentes", conn)
+    tickets=pd.read_sql_query("SELECT * from tickets_emitidos", conn)
     clientes = pd.read_sql_query("SELECT * from clientes", conn)
-    incidentes['critico']=(incidentes['es_mantenimiento'] == True) & (incidentes['tipo_incidencia'] != 1)
+    tickets['critico']=(tickets['es_mantenimiento'] == True) & (tickets['tipo_incidencia'] != 1)
 
     #incidentes=incidentes.sort_values(by='cliente')
     #incidentes=incidentes.nsmallest(10, 'id_incidente')
@@ -35,7 +35,7 @@ def grafico_criticos():
 
     #nombreClientes=clientes.pop('nombre')
     for i in range(10):
-        cliente = incidentes[(incidentes['cliente'] == i+1) & incidentes['critico'] == True]
+        cliente = tickets[(tickets['id_cliente'] == i+1) & tickets['critico'] == True]
         incidentesCriticos=len(cliente)#se puede hacer con cliente.size, pero devuelve todos los elementos del df en vez del numero incidentes criticos(todos los elementos son los incidentes *8)
         #nombreCliente=nombreClientes.loc[i]
         aux=(incidentesCriticos)
