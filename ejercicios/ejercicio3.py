@@ -134,15 +134,51 @@ def agrupacion_dia_semana():
 
     if fecha in df["dia_semana_apertura"].unique():
         print("\nTickets abiertos en", fecha)
-        print(df[df["dia_semana_apertura"] == fecha])
+        df_ap = df[df["dia_semana_apertura"] == fecha]
 
     if fecha in df["dia_semana_cierre"].unique():
         print("\nTickets cerrados en", fecha)
-        print(df[df["dia_semana_cierre"] == fecha])
+        df_cerr = df[df["dia_semana_cierre"] == fecha]
 
     if fecha in df["dia_semana_contacto"].unique():
         print("\nContactos realizados en", fecha)
-        print(df[df["dia_semana_contacto"] == fecha])
+        df_cont = df[df["dia_semana_contacto"] == fecha]
+
+    #Apertura
+    #num_inc = len(df[df['id_ticket_emitido'].unique()])
+    num_inc = len(df_ap["id_ticket_emitido"].drop_duplicates())
+    num_cont = len(df_ap)
+    #estadistica = analisis_estadistico(df)
+
+    print("Fecha de apertura")
+    print(df_ap)
+    print(f"Número de incidentes: {num_inc}")
+    print(f"Número de contactos: {num_cont}")
+    #print(estadistica)
+
+    #Cierre
+    #num_inc = len(df[df['id_ticket_emitido'].unique()])
+    num_inc = len(df_cerr["id_ticket_emitido"].drop_duplicates())
+    num_cont = len(df_cerr)
+    #estadistica = analisis_estadistico(df)
+
+    print("Fecha de cierre")
+    print(df_cerr)
+    print(f"Número de incidentes: {num_inc}")
+    print(f"Número de contactos: {num_cont}")
+    #print(estadistica)
+
+    #Contacto
+    #num_inc = len(df[df['id_ticket_emitido'].unique()])
+    num_inc = len(df_cont["id_ticket_emitido"].drop_duplicates())
+    num_cont = len(df_cont)
+    #estadistica = analisis_estadistico(df)
+
+    print("Fecha de contacto")
+    print(df_cont)
+    print(f"Número de incidentes: {num_inc}")
+    print(f"Número de contactos: {num_cont}")
+    #print(estadistica)
 
     con.close()
 
