@@ -5,7 +5,8 @@ import numpy as np
 import json
 import ejercicio2ETL
 
-def analisis_estadistico(datos):
+
+def estadistica(datos):
     if len(datos) == 0:
         return {
             'mediana': None,
@@ -22,6 +23,22 @@ def analisis_estadistico(datos):
         'minimo': np.min(datos)
     }
 
+def analisis_estadistico(df_fraude):
+    num_inc = len(df_fraude["id_ticket_emitido"].drop_duplicates())
+    num_cont = len(df_fraude)
+    estadistica_mantenimiento = estadistica(df_fraude['es_mantenimiento'])
+    estadistica_satisf = estadistica(df_fraude['satisfaccion_cliente'])
+    estadistica_tiempo_cont = estadistica(df_fraude['tiempo'])
+
+    print("Datos de fraude:")
+    print(df_fraude)
+    print(f"Número de incidentes: {num_inc}")
+    print(f"Número de contactos: {num_cont}")
+    print(f"Estadistica sobre mantenimiento: {estadistica_mantenimiento}")
+    print(f"Estadistica sobre satisfaccion de cliente: {estadistica_satisf}")
+    print(f"Estadistica sobre el tiempo de contacto: {estadistica_tiempo_cont}")
+
+
 def agrupacion_empleado():
     con = sqlite3.connect("incidentes.db")
     query = "SELECT * FROM tickets_emitidos JOIN contactos_empleados ON tickets_emitidos.id_ticket_emitido = contactos_empleados.id_ticket_emitido"
@@ -32,17 +49,12 @@ def agrupacion_empleado():
     id_empleado = input().strip()
     id_empleado = int(id_empleado)
     df = df[df['id_emp']==id_empleado]
-
-    #num_inc = len(df[df['id_ticket_emitido'].unique()])
-    num_inc = len(df["id_ticket_emitido"].drop_duplicates())
-
-    num_cont = len(df)
-    #estadistica = analisis_estadistico(df)
-
+    df_fraude = df[df['tipo_incidencia']==5]
     print(df)
-    print(f"Número de incidentes: {num_inc}")
-    print(f"Número de contactos: {num_cont}")
-    #print(estadistica)
+    analisis_estadistico(df_fraude)
+
+    con.close()
+
 
 def agrupacion_nivel_empleado():
     con = sqlite3.connect("incidentes.db")
@@ -59,16 +71,12 @@ def agrupacion_nivel_empleado():
     if (0>nivel_empleado>3):
         return 0
     df = df[df['nivel'] == nivel_empleado]
-
-    #num_inc = len(df[df['id_ticket_emitido'].unique()])
-    num_inc = len(df["id_ticket_emitido"].drop_duplicates())
-    num_cont = len(df)
-    #estadistica = analisis_estadistico(df)
-
+    df_fraude = df[df['tipo_incidencia'] == 5]
     print(df)
-    print(f"Número de incidentes: {num_inc}")
-    print(f"Número de contactos: {num_cont}")
-    #print(estadistica)
+    analisis_estadistico(df_fraude)
+
+    con.close()
+
 
 def agrupacion_cliente():
     con = sqlite3.connect("incidentes.db")
@@ -80,16 +88,11 @@ def agrupacion_cliente():
     id_cliente = input().strip()
     id_cliente = int(id_cliente)
     df = df[df['id_cliente'] == id_cliente]
-
-    #num_inc = len(df[df['id_ticket_emitido'].unique()])
-    num_inc = len(df["id_ticket_emitido"].drop_duplicates())
-    num_cont = len(df)
-    #estadistica = analisis_estadistico(df)
-
+    df_fraude = df[df['tipo_incidencia'] == 5]
     print(df)
-    print(f"Número de incidentes: {num_inc}")
-    print(f"Número de contactos: {num_cont}")
-    #print(estadistica)
+    analisis_estadistico(df_fraude)
+
+    con.close()
 
 
 def agrupacion_tipo_inc():
@@ -104,16 +107,11 @@ def agrupacion_tipo_inc():
     if(0 > tipo_inc > 5):
         return 0
     df = df[df['tipo_incidencia'] == tipo_inc]
-
-    #num_inc = len(df[df['id_ticket_emitido'].unique()])
-    num_inc = len(df["id_ticket_emitido"].drop_duplicates())
-    num_cont = len(df)
-    #estadistica = analisis_estadistico(df)
-
+    df_fraude = df[df['tipo_incidencia'] == 5]
     print(df)
-    print(f"Número de incidentes: {num_inc}")
-    print(f"Número de contactos: {num_cont}")
-    #print(estadistica)
+    analisis_estadistico(df_fraude)
+
+    con.close()
 
 
 def agrupacion_dia_semana():
@@ -135,50 +133,32 @@ def agrupacion_dia_semana():
     if fecha in df["dia_semana_apertura"].unique():
         print("\nTickets abiertos en", fecha)
         df_ap = df[df["dia_semana_apertura"] == fecha]
+        df_ap_fraude = df[df['tipo_incidencia']==5]
 
     if fecha in df["dia_semana_cierre"].unique():
         print("\nTickets cerrados en", fecha)
         df_cerr = df[df["dia_semana_cierre"] == fecha]
+        df_cerr_fraude = df[df['tipo_incidencia']==5]
 
     if fecha in df["dia_semana_contacto"].unique():
         print("\nContactos realizados en", fecha)
         df_cont = df[df["dia_semana_contacto"] == fecha]
+        df_cont_fraude = df[df['tipo_incidencia']==5]
 
     #Apertura
-    #num_inc = len(df[df['id_ticket_emitido'].unique()])
-    num_inc = len(df_ap["id_ticket_emitido"].drop_duplicates())
-    num_cont = len(df_ap)
-    #estadistica = analisis_estadistico(df)
-
     print("Fecha de apertura")
     print(df_ap)
-    print(f"Número de incidentes: {num_inc}")
-    print(f"Número de contactos: {num_cont}")
-    #print(estadistica)
+    analisis_estadistico(df_ap_fraude)
 
     #Cierre
-    #num_inc = len(df[df['id_ticket_emitido'].unique()])
-    num_inc = len(df_cerr["id_ticket_emitido"].drop_duplicates())
-    num_cont = len(df_cerr)
-    #estadistica = analisis_estadistico(df)
-
     print("Fecha de cierre")
     print(df_cerr)
-    print(f"Número de incidentes: {num_inc}")
-    print(f"Número de contactos: {num_cont}")
-    #print(estadistica)
+    analisis_estadistico(df_cerr_fraude)
 
     #Contacto
-    #num_inc = len(df[df['id_ticket_emitido'].unique()])
-    num_inc = len(df_cont["id_ticket_emitido"].drop_duplicates())
-    num_cont = len(df_cont)
-    #estadistica = analisis_estadistico(df)
-
     print("Fecha de contacto")
     print(df_cont)
-    print(f"Número de incidentes: {num_inc}")
-    print(f"Número de contactos: {num_cont}")
-    #print(estadistica)
+    analisis_estadistico(df_cont_fraude)
 
     con.close()
 
