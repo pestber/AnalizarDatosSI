@@ -131,19 +131,16 @@ def agrupacion_dia_semana():
     fecha = input("Introduzca un día de la semana en ingles: ").strip().capitalize()
 
     if fecha in df["dia_semana_apertura"].unique():
-        print("\nTickets abiertos en", fecha)
         df_ap = df[df["dia_semana_apertura"] == fecha]
-        df_ap_fraude = df[df['tipo_incidencia']==5]
+        df_ap_fraude = df_ap[df_ap['tipo_incidencia']==5]
 
     if fecha in df["dia_semana_cierre"].unique():
-        print("\nTickets cerrados en", fecha)
         df_cerr = df[df["dia_semana_cierre"] == fecha]
-        df_cerr_fraude = df[df['tipo_incidencia']==5]
+        df_cerr_fraude = df_cerr[df_cerr['tipo_incidencia']==5]
 
     if fecha in df["dia_semana_contacto"].unique():
-        print("\nContactos realizados en", fecha)
         df_cont = df[df["dia_semana_contacto"] == fecha]
-        df_cont_fraude = df[df['tipo_incidencia']==5]
+        df_cont_fraude = df_cont[df_cont['tipo_incidencia']==5]
 
     #Apertura
     print("Fecha de apertura")
