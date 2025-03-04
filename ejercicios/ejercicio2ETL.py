@@ -82,6 +82,7 @@ def ejercicio2ETL():
     # Insertar los datos de tickets_emitidos y sus contactos
     if "tickets_emitidos" in data:
         for ticket in data["tickets_emitidos"]:
+            #hay que poner la fecha del ultimo contacto como fecha_cierre
             cur.execute(
                 "INSERT OR IGNORE INTO tickets_emitidos (id_cliente, fecha_apertura, fecha_cierre, es_mantenimiento, satisfaccion_cliente, tipo_incidencia) " \
                 "VALUES ('%d', '%s', '%s', '%d', '%d', '%d')" %
@@ -98,6 +99,9 @@ def ejercicio2ETL():
                                 "VALUES ('%d', '%d', '%s', '%.2f')" %
                                 (id_ticket_emitido, int(contacto["id_emp"]), contacto["fecha"],
                                  float(contacto["tiempo"])))
+                    ultima_fecha = contacto["fecha"]
+            cur.execute("UPDATE tickets_emitidos SET fecha_cierre = ? WHERE id_ticket_emitido = ?", (ultima_fecha, id_ticket_emitido))
+
 
     # Guardar los cambios y cerrar la conexión
     con.commit()

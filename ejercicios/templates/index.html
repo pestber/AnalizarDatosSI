@@ -10,13 +10,18 @@
 
     <h2>Top 5 Clientes Críticos</h2>
     <div id="grafico"></div>
+
+    <h2>Acciones Empleados</h2>
+    <div id="grafico2"></div>
 </body>
 
 <script>
         var grafico = JSON.parse({{ grafico | safe }})
+        var grafico2 = JSON.parse({{ grafico2 | safe }})
 
 
         Plotly.newPlot('grafico', grafico.data, grafico.layout)
+        Plotly.newPlot('grafico2', grafico2.data, grafico2.layout)
 
 
     </script>

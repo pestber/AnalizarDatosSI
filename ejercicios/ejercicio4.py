@@ -47,11 +47,11 @@ def grafico_criticos():
     #print(clientes)
     orden=clientes.nlargest(5, 'incidentesCriticos')
 
-    fig2 = go.Figure(data=go.Bar(x=orden['nombre'], y=orden['incidentesCriticos']))
+    fig = go.Figure(data=go.Bar(x=orden['nombre'], y=orden['incidentesCriticos']))
 
-    fig2.update_layout(xaxis_title='Usuario', yaxis_title='Proporción')
+    fig.update_layout(xaxis_title='Usuario', yaxis_title='Proporción')
 
-    grafico = fig2.to_json()
+    grafico = fig.to_json()
     conn.close()
     return grafico
 
@@ -62,12 +62,55 @@ def grafico_criticos():
     #print(clientes)
 #prueba()
 
+
+def grafico_acciones():
+
+    conn = sqlite3.connect('incidentes.db')
+
+    contactos = pd.read_sql_query("SELECT * from contactos_empleados", conn)
+    empleados= pd.read_sql_query("SELECT * from empleados", conn)
+    orden=contactos.sort_values('id_emp', ascending=True)
+
+    aux=0
+    cont=0
+    accionesEmp=[]
+#101=42
+    for i in range(len(contactos)):
+
+        idEmp=orden.iloc[i, 2]
+        if(aux!=idEmp):
+            accionesEmp.append(cont)
+            aux=idEmp
+            cont=1
+        else:
+            cont+=1
+
+        if(i+1==len(contactos)):
+            accionesEmp.append(cont)
+
+    accionesEmp.remove(0)
+    print(accionesEmp, len(accionesEmp))
+
+    empleados['acciones']=accionesEmp
+
+    fig = go.Figure(data=go.Bar(x=empleados['nombre'], y=empleados['acciones']))
+
+    fig.update_layout(xaxis_title='Usuario', yaxis_title='Numero De Acciones')
+
+    grafico = fig.to_json()
+    conn.close()
+    return grafico
+
+
+
 @app.route('/')
 def index():
 
     grafico = grafico_criticos()
 
-    return render_template('index.html', grafico=json.dumps(grafico))
+    grafico2 =grafico_acciones()
+
+    return render_template('index.html', grafico=json.dumps(grafico), grafico2=json.dumps(grafico2))
 
 
 if __name__ == '__main__': app.run(debug = True)
