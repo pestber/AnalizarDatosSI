@@ -13,15 +13,22 @@
 
     <h2>Acciones Empleados</h2>
     <div id="grafico2"></div>
+
+    <h2>Acciones por Dia de la Semana</h2>
+    <div id="grafico3"></div>
+
+
 </body>
 
 <script>
         var grafico = JSON.parse({{ grafico | safe }})
         var grafico2 = JSON.parse({{ grafico2 | safe }})
+        var grafico3 = JSON.parse({{ grafico3 | safe }})
 
 
         Plotly.newPlot('grafico', grafico.data, grafico.layout)
         Plotly.newPlot('grafico2', grafico2.data, grafico2.layout)
+        Plotly.newPlot('grafico3', grafico3.data, grafico3.layout)
 
 
     </script>

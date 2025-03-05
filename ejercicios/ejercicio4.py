@@ -74,9 +74,8 @@ def grafico_acciones():
     aux=0
     cont=0
     accionesEmp=[]
-#101=42
-    for i in range(len(contactos)):
 
+    for i in range(len(contactos)):
         idEmp=orden.iloc[i, 2]
         if(aux!=idEmp):
             accionesEmp.append(cont)
@@ -88,8 +87,9 @@ def grafico_acciones():
         if(i+1==len(contactos)):
             accionesEmp.append(cont)
 
+    #este for se puede evitar con el metodo value_counts() el cual descubrí mas tarde
+
     accionesEmp.remove(0)
-    print(accionesEmp, len(accionesEmp))
 
     empleados['acciones']=accionesEmp
 
@@ -102,6 +102,36 @@ def grafico_acciones():
     return grafico
 
 
+def grafico_dias():
+
+    conn = sqlite3.connect('incidentes.db')
+
+    tickets = pd.read_sql_query("SELECT * from tickets_emitidos", conn)
+
+    tickets["fecha_apertura"]=pd.to_datetime(tickets["fecha_apertura"])
+
+    tickets["fecha_apertura"]=pd.to_datetime(tickets["fecha_apertura"])
+
+    tickets['dia_semana_apretura']=tickets["fecha_apertura"].dt.day_name()
+    orden = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+    dias=tickets['dia_semana_apretura'].value_counts()
+
+    dias=dias.reindex(orden, fill_value=0)
+
+    df_dias = dias.reset_index()
+
+    df_dias.columns = ['dia_semana', 'cantidad']
+
+    print(df_dias)
+
+    fig = go.Figure(data=go.Bar(x=df_dias['dia_semana'], y=df_dias['cantidad']))
+
+    fig.update_layout(xaxis_title='Dia', yaxis_title='Numero De Acciones')
+
+    grafico = fig.to_json()
+    conn.close()
+    return grafico
+
 
 @app.route('/')
 def index():
@@ -110,7 +140,10 @@ def index():
 
     grafico2 =grafico_acciones()
 
-    return render_template('index.html', grafico=json.dumps(grafico), grafico2=json.dumps(grafico2))
+    grafico3= grafico_dias()
+
+
+    return render_template('index.html', grafico=json.dumps(grafico), grafico2=json.dumps(grafico2),  grafico3=json.dumps(grafico3))
 
 
 if __name__ == '__main__': app.run(debug = True)
