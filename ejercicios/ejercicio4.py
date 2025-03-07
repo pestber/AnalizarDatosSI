@@ -133,6 +133,26 @@ def grafico_dias():
     return grafico
 
 
+def grafico_tiempo_resol_incidente():
+    conn = sqlite3.connect('incidentes.db')
+
+    tickets = pd.read_sql_query("SELECT * FROM tickets_emitidos", conn)
+    contactos = pd.read_sql_query("SELECT * FROM contactos_empleados", conn)
+    tipos_incidentes = pd.read_sql_query("SELECT * FROM tipos_incidentes", conn)
+
+    incidencias = tickets.merge(tipos_incidentes, left_on="tipo_incidencia", right_on="id_inci")
+
+    incidencias = incidencias.merge(contactos, on="id_ticket_emitido")
+
+    print(incidencias['tipo_incidencia'], incidencias['tiempo'])
+    tiempo_por_incidente = incidencias.groupby("nombre")["tiempo"].sum().reset_index()
+
+    percentiles = incidencias.groupby("nombre")["tiempo"].quantile([0.05, 0.90]).unstack()
+    print(percentiles)
+    print(tiempo_por_incidente)
+
+
+grafico_tiempo_resol_incidente()
 @app.route('/')
 def index():
 
