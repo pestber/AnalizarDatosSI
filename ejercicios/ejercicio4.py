@@ -151,19 +151,46 @@ def grafico_tiempo_resol_incidente():
     print(percentiles)
     print(tiempo_por_incidente)
 
+def grafico_media_tiempo():
 
-grafico_tiempo_resol_incidente()
+    conn = sqlite3.connect('incidentes.db')
+
+    tickets = pd.read_sql_query("SELECT * FROM tickets_emitidos", conn)
+
+    tickets["fecha_apertura"] = pd.to_datetime(tickets["fecha_apertura"])
+    tickets["fecha_cierre"] = pd.to_datetime(tickets["fecha_cierre"])
+
+    tickets["tiempo_resolucion"] = (tickets["fecha_cierre"] - tickets["fecha_apertura"]).dt.total_seconds() / 3600
+
+    media_tiempo = tickets.groupby("es_mantenimiento")["tiempo_resolucion"].mean().reset_index()
+
+    fig = go.Figure(data=go.Bar(x=media_tiempo['es_mantenimiento'], y=media_tiempo['tiempo_resolucion']))
+
+    fig.update_xaxes(tickvals=[1, 0], ticktext=["Mantenimiento", "No Mantenimiento"])
+
+    fig.update_layout(xaxis_title='Es Mantenimiento', yaxis_title='Tiempo')
+
+    grafico = fig.to_json()
+    conn.close()
+    return grafico
+
+
+#grafico_tiempo_resol_incidente()
+grafico_media_tiempo()
+
 @app.route('/')
 def index():
 
     grafico = grafico_criticos()
 
-    grafico2 =grafico_acciones()
+    grafico2 = grafico_acciones()
 
-    grafico3= grafico_dias()
+    grafico3 = grafico_dias()
+
+    grafico4 = grafico_media_tiempo()
 
 
-    return render_template('index.html', grafico=json.dumps(grafico), grafico2=json.dumps(grafico2),  grafico3=json.dumps(grafico3))
+    return render_template('index.html', grafico=json.dumps(grafico), grafico2=json.dumps(grafico2),  grafico3=json.dumps(grafico3),  grafico4=json.dumps(grafico4))
 
 
 if __name__ == '__main__': app.run(debug = True)
