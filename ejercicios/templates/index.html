@@ -17,8 +17,11 @@
     <h2>Acciones por Dia de la Semana</h2>
     <div id="grafico3"></div>
 
-    <h2>Media de tiempo manteninmiento</h2>
+    <h2>Media de Tiempo Manteninmiento</h2>
     <div id="grafico4"></div>
+
+     <h2>Tiempo de Resolución por Tipo de Incidente</h2>
+    <div id="grafico5"></div>
 
 
 </body>
@@ -28,12 +31,14 @@
         var grafico2 = JSON.parse({{ grafico2 | safe }})
         var grafico3 = JSON.parse({{ grafico3 | safe }})
         var grafico4 = JSON.parse({{ grafico4 | safe }})
+        var grafico5 = JSON.parse({{ grafico5 | safe }})
 
 
         Plotly.newPlot('grafico', grafico.data, grafico.layout)
         Plotly.newPlot('grafico2', grafico2.data, grafico2.layout)
         Plotly.newPlot('grafico3', grafico3.data, grafico3.layout)
         Plotly.newPlot('grafico4', grafico4.data, grafico4.layout)
+        Plotly.newPlot('grafico5', grafico5.data, grafico5.layout)
 
 
     </script>

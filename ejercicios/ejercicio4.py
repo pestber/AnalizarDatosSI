@@ -5,19 +5,6 @@ import plotly.graph_objects as go
 from flask import render_template, Flask
 
 app = Flask(__name__)
-def prueba():
-
-    conn = sqlite3.connect('incidentes.db')
-
-
-    incidentes = pd.read_sql_query("SELECT * from tickets_emitidos", conn)
-    clientes = pd.read_sql_query("SELECT * from clientes", conn)
-    contactos=pd.read_sql_query("SELECT * from contactos_empleados", conn)
-    empleados=pd.read_sql_query("SELECT * from empleados", conn)
-
-    contactos['patata']=empleados['nivel'] &contactos['id_emp']&empleados['id_emp']
-
-    print(incidentes)
 def grafico_criticos():
 
 
@@ -29,22 +16,15 @@ def grafico_criticos():
     clientes = pd.read_sql_query("SELECT * from clientes", conn)
     tickets['critico']=(tickets['es_mantenimiento'] == True) & (tickets['tipo_incidencia'] != 1)
 
-    #incidentes=incidentes.sort_values(by='cliente')
-    #incidentes=incidentes.nsmallest(10, 'id_incidente')
-    #print(incidentes)
 
-    #nombreClientes=clientes.pop('nombre')
     for i in range(10):
         cliente = tickets[(tickets['id_cliente'] == i+1) & tickets['critico'] == True]
         incidentesCriticos=len(cliente)#se puede hacer con cliente.size, pero devuelve todos los elementos del df en vez del numero incidentes criticos(todos los elementos son los incidentes *8)
-        #nombreCliente=nombreClientes.loc[i]
         aux=(incidentesCriticos)
         clientesAux.append(aux)
 
     clientes['incidentesCriticos']=pd.Series(clientesAux)
 
-    #clientesAux.sort(key= lambda x:x[0], reverse=True)
-    #print(clientes)
     orden=clientes.nlargest(5, 'incidentesCriticos')
 
     fig = go.Figure(data=go.Bar(x=orden['nombre'], y=orden['incidentesCriticos']))
@@ -54,13 +34,6 @@ def grafico_criticos():
     grafico = fig.to_json()
     conn.close()
     return grafico
-
-    #print(incidentes['critico'])
-
-
-
-    #print(clientes)
-#prueba()
 
 
 def grafico_acciones():
@@ -140,16 +113,23 @@ def grafico_tiempo_resol_incidente():
     contactos = pd.read_sql_query("SELECT * FROM contactos_empleados", conn)
     tipos_incidentes = pd.read_sql_query("SELECT * FROM tipos_incidentes", conn)
 
-    incidencias = tickets.merge(tipos_incidentes, left_on="tipo_incidencia", right_on="id_inci")
+    tiempo_por_incidente = contactos.groupby("id_ticket_emitido")["tiempo"].sum().reset_index()
 
-    incidencias = incidencias.merge(contactos, on="id_ticket_emitido")
-
-    print(incidencias['tipo_incidencia'], incidencias['tiempo'])
-    tiempo_por_incidente = incidencias.groupby("nombre")["tiempo"].sum().reset_index()
+    incidencias = tickets.merge(tiempo_por_incidente).merge(tipos_incidentes, left_on="tipo_incidencia", right_on="id_inci")
 
     percentiles = incidencias.groupby("nombre")["tiempo"].quantile([0.05, 0.90]).unstack()
-    print(percentiles)
-    print(tiempo_por_incidente)
+
+    fig = go.Figure()
+
+    for incidente in percentiles.index:
+        fig.add_trace(go.Box(y=incidencias[incidencias["nombre"] == incidente]["tiempo"], name=incidente, boxpoints=False,))
+
+
+    grafico = fig.to_json()
+    conn.close()
+    return grafico
+
+
 
 def grafico_media_tiempo():
 
@@ -175,8 +155,8 @@ def grafico_media_tiempo():
     return grafico
 
 
-#grafico_tiempo_resol_incidente()
-grafico_media_tiempo()
+grafico_tiempo_resol_incidente()
+
 
 @app.route('/')
 def index():
@@ -189,8 +169,10 @@ def index():
 
     grafico4 = grafico_media_tiempo()
 
+    grafico5 = grafico_tiempo_resol_incidente()
 
-    return render_template('index.html', grafico=json.dumps(grafico), grafico2=json.dumps(grafico2),  grafico3=json.dumps(grafico3),  grafico4=json.dumps(grafico4))
+
+    return render_template('index.html', grafico=json.dumps(grafico), grafico2=json.dumps(grafico2),  grafico3=json.dumps(grafico3),  grafico4=json.dumps(grafico4), grafico5=json.dumps(grafico5))
 
 
 if __name__ == '__main__': app.run(debug = True)
