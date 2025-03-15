@@ -7,7 +7,6 @@ from flask import render_template, Flask
 app = Flask(__name__)
 def grafico_criticos():
 
-
     clientesAux=[]
 
     conn=sqlite3.connect('incidentes.db')
@@ -19,7 +18,7 @@ def grafico_criticos():
 
     for i in range(10):
         cliente = tickets[(tickets['id_cliente'] == i+1) & tickets['critico'] == True]
-        incidentesCriticos=len(cliente)#se puede hacer con cliente.size, pero devuelve todos los elementos del df en vez del numero incidentes criticos(todos los elementos son los incidentes *8)
+        incidentesCriticos=len(cliente) #se puede hacer con cliente.size, pero devuelve todos los elementos del df en vez del numero incidentes criticos(todos los elementos son los incidentes *8)
         aux=(incidentesCriticos)
         clientesAux.append(aux)
 
@@ -130,7 +129,6 @@ def grafico_tiempo_resol_incidente():
     return grafico
 
 
-
 def grafico_media_tiempo():
 
     conn = sqlite3.connect('incidentes.db')
@@ -154,8 +152,6 @@ def grafico_media_tiempo():
     conn.close()
     return grafico
 
-
-grafico_tiempo_resol_incidente()
 
 
 @app.route('/')
