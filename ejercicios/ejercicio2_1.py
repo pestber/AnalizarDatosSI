@@ -2,7 +2,6 @@ import sqlite3
 import pandas as pd
 import numpy as np
 import json
-
 import requests
 from flask import Flask, request
 
@@ -12,7 +11,7 @@ app = Flask(__name__)
 @app.route('/')
 def home():
     return '''
-    <h1>Bienvenido</h1>
+    <h1>Práctica Sistemas de la Información<br></h1>
     <h2>Top de clientes con más incidencias, tipo de incidencias con más tiempo o empleados con mas tiempo resolviendo incidencias</h2>
     <p>Introduce el número de resultados que deseas ver:</p>
     <form action="/resultados" method="get">
@@ -88,11 +87,18 @@ def top_vulnerabilidades():
     response = requests.get('https://cve.circl.lu/api/last')
     if response.status_code == 200:
         try:
-            vulnerabs = response.json()[:10]
-            result_vulnerabs = "<br>".join([f"CVE ID: {vuln.get('id', 'N/A')}, Summary: {vuln.get('summary', 'N/A')}" for vuln in vulnerabs])
-            return f"Top 10 vulnerabilidades basado a tiempo real:<br>{result_vulnerabs}"
+            vulnerabilities = response.json()
+
+            if isinstance(vulnerabilities, list) and len(vulnerabilities) > 0:
+                vulnerabilities = vulnerabilities[:10]
+                result_vulnerabilities = "<br>".join([f"CVE: {vuln}<br>" for vuln in vulnerabilities])
+                return f"Top 10 vulnerabilidades basado a tiempo real:<br>{result_vulnerabilities}"
+            else:
+                return "Error: La respuesta no contiene una lista de vulnerabilidades."
+        except ValueError as e:
+            return f"Error al procesar los datos de vulnerabilidades: Respuesta no es JSON válida. {e}"
         except Exception as e:
-            return "Error al procesar los datos de vulnerabilidades: " + str(e)
+            return f"Error al procesar los datos de vulnerabilidades: {e}"
     else:
         return "Error al obtener las vulnerabilidades."
 
