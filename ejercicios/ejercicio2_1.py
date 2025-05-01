@@ -7,6 +7,7 @@ from flask import Flask, request, redirect, url_for,session, url_for, render_tem
 from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
+app.secret_key = "secretkey"
 
 
 @app.route('/')
@@ -57,7 +58,7 @@ def top_clientes():
     con.close()
     df_clientes_mas_incidencias = df_tickets.groupby('id_cliente')['tipo_incidencia'].count().reset_index(name='count').sort_values(by='count', ascending=False)
     result_clientes = df_clientes_mas_incidencias.head(num_resultados).apply(lambda x: f"Id del cliente: {x['id_cliente']} - Número de incidencias: {x['count']}", axis=1).str.cat(sep="<br>")
-    return "Clientes con más incidencias (id - número de incidencias):<br>" + result_clientes + "<br>"
+    return "Clientes con más incidencias (id - número de incidencias):<br>" + result_clientes + "<br>" + "<br><a href='/'>Volver al inicio</a>"
 
 
 @app.route('/top-incidencias')
@@ -71,7 +72,7 @@ def top_incidencias():
     df_incidencia_mas_tiempo = df_tipo_inc.groupby('tipo_incidencia')['tiempo'].sum().reset_index(name='count').sort_values(by='count', ascending=False)
     result_incidencias = df_incidencia_mas_tiempo.head(num_resultados).apply(lambda x: f"Tipo de incidencia: {x['tipo_incidencia']} - Tiempo total: {x['count']}", axis=1).str.cat(sep="<br>")
 
-    return "Incidencias con más tiempo (id - tiempo total): <br>" + result_incidencias + "<br>"
+    return "Incidencias con más tiempo (id - tiempo total): <br>" + result_incidencias + "<br>" + "<br><a href='/'>Volver al inicio</a>"
 
 
 @app.route('/empleados')
@@ -90,7 +91,7 @@ def top_empleados():
 
     result_empleados = df_empleados_mas_tiempo.head(num_resultados).apply(lambda x: f"Id de empleado: {x['id_emp']}, nombre: {x['nombre']}, nivel: {x['nivel']}, fecha de contrato: {x['fecha_contrato']}, número de incidencias: {x['count']}",  axis=1).str.cat(sep="<br>")
 
-    return "Empleados que más tiempo han empleado en resolución de incidentes:<br>" + result_empleados + "<br>"
+    return "Empleados que más tiempo han empleado en resolución de incidentes:<br>" + result_empleados + "<br>" + "<br><a href='/'>Volver al inicio</a>"
 
 
 @app.route('/top-vulnerabilidades')
@@ -103,7 +104,8 @@ def top_vulnerabilidades():
             if isinstance(vulnerabilities, list) and len(vulnerabilities) > 0:
                 vulnerabilities = vulnerabilities[:10]
                 result_vulnerabilities = "<br>".join([f"CVE: {vuln}<br>" for vuln in vulnerabilities])
-                return f"Top 10 vulnerabilidades basado a tiempo real:<br>{result_vulnerabilities}"
+                return (f"Top 10 vulnerabilidades basado a tiempo real:<br>{result_vulnerabilities}"
+                        f"<br><a href='/'>Volver al inicio</a>")
             else:
                 return "Error: La respuesta no contiene una lista de vulnerabilidades."
         except ValueError as e:
@@ -127,7 +129,8 @@ def top_proveedores():
             if isinstance(proveedores, list) and len(proveedores) > 0:
                 proveedores = proveedores[:10]
                 result_proveedores = "<br>".join([f"Proveedor: {vuln}<br>" for vuln in proveedores])
-                return f"Top 10 proveedores:<br>{result_proveedores}"
+                return (f"Top 10 proveedores:<br>{result_proveedores}"
+                        f"<br><a href='/'>Volver al inicio</a>")
             else:
                 return "Error: La respuesta no contiene una lista de proveedores."
         except ValueError as e:
@@ -184,7 +187,10 @@ def login():
 @app.route('/home')
 def home():
     if 'user_id' in session:
-        return f"Bienvenido, usuario {session['user_id']}!"
+        return (f"Bienvenido, usuario {session['user_id']}!"
+                f"<br><a href='/logout'>Cerrar sesión</a>"
+                f"<br><a href='/'>Volver al inicio</a>")
+
     return redirect(url_for('login'))
 
 @app.route('/tiempo-medio')
@@ -194,7 +200,8 @@ def tiempo_medio():
     df = pd.read_sql_query(query, con)
     con.close()
     result = df.apply(lambda x: f"Tipo de incidencia: {x['tipo_incidencia']} - Tiempo promedio: {x['tiempo_promedio']:.2f} días", axis=1).str.cat(sep="<br>")
-    return f"Tiempo medio de resolución por tipo de incidencia:<br>{result}"
+    return (f"Tiempo medio de resolución por tipo de incidencia:<br>{result}"
+            f"<br><a href='/'>Volver al inicio</a>")
 
 if __name__ == '__main__':
     app.run(debug=True)

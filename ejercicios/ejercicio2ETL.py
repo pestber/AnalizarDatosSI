@@ -55,6 +55,14 @@ def ejercicio2ETL():
                 "FOREIGN KEY (id_ticket_emitido) REFERENCES tickets_emitidos(id_ticket_emitido)"
                 ");")
 
+    cur.execute('''
+    CREATE TABLE IF NOT EXISTS usuarios (
+        id_usuario INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT UNIQUE NOT NULL,
+        password TEXT NOT NULL
+    );
+    ''')
+
 #Insertamos los datos en la base de datos
 
     # Insertar los datos de clientes
