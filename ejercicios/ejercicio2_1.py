@@ -10,7 +10,7 @@ app = Flask(__name__)
 
 
 @app.route('/')
-def home():
+def inicio():
     return '''
     <h1>Práctica Sistemas de la Información<br></h1>
     <h2>Top de clientes con más incidencias, tipo de incidencias con más tiempo o empleados con mas tiempo resolviendo incidencias</h2>
@@ -21,8 +21,18 @@ def home():
         <input type="submit" value="Ver resultados">
     </form>
     
-    <h2>Top 10 vulnerabilidades</h2>
+    <h2>Top 10</h2>
     <li><a href="/top-vulnerabilidades">Top 10 vulnerabilidades basado a tiempo real</a></li>
+    <li><a href="/top-proveedores">Top 10 proveedores</a></li>
+     
+     <h2>Incidencias</h2>
+     <li><a href="/tiempo-medio">Tiempo medio de resolución por tipo de incidencia</a></li>
+    
+    <h2>Registro y Login</h2>
+    <li><a href="/register">Registrar usuario</a></li>
+    <li><a href="/login">Iniciar sesión</a></li>
+    <li><a href="/home">Página de inicio</a></li>
+   
     '''
 
 @app.route('/resultados')
