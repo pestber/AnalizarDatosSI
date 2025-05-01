@@ -6,16 +6,23 @@ import requests
 from flask import Flask, request, redirect, url_for,session, url_for, render_template
 from werkzeug.security import generate_password_hash, check_password_hash
 
+import ejercicios.ejercicio2ETL
 app = Flask(__name__)
 app.secret_key = "secretkey"
 
 
 @app.route('/')
 def inicio():
+    ejercicios.ejercicio2ETL.ejercicio2ETL()
+
     return '''
     <h1>Práctica Sistemas de la Información<br></h1>
-    <h2>Top de clientes con más incidencias, tipo de incidencias con más tiempo o empleados con mas tiempo resolviendo incidencias</h2>
-    <p>Introduce el número de resultados que deseas ver:</p>
+    <h2>Top X</h2>
+    <li> Clientes con más incidencias</li>
+    <li> Tipo de incidencias con más tiempo</li>
+    <li> Empleados con más tiempo resolviendo incidencias</li>
+    
+    <p><strong>Introduce el número de resultados que deseas ver:</strong></p>
     <form action="/resultados" method="get">
         <label for="num_resultados">Número de resultados:</label>
         <input type="number" id="num_resultados" name="num_resultados" min="1" required>
@@ -23,8 +30,8 @@ def inicio():
     </form>
     
     <h2>Top 10</h2>
-    <li><a href="/top-vulnerabilidades">Top 10 vulnerabilidades basado a tiempo real</a></li>
-    <li><a href="/top-proveedores">Top 10 proveedores</a></li>
+    <li><a href="/top-vulnerabilidades">Vulnerabilidades, basado a tiempo real</a></li>
+    <li><a href="/top-proveedores">Proveedores</a></li>
      
      <h2>Incidencias</h2>
      <li><a href="/tiempo-medio">Tiempo medio de resolución por tipo de incidencia</a></li>
@@ -103,8 +110,8 @@ def top_vulnerabilidades():
 
             if isinstance(vulnerabilities, list) and len(vulnerabilities) > 0:
                 vulnerabilities = vulnerabilities[:10]
-                result_vulnerabilities = "<br>".join([f"CVE: {vuln}<br>" for vuln in vulnerabilities])
-                return (f"Top 10 vulnerabilidades basado a tiempo real:<br>{result_vulnerabilities}"
+                result_vulnerabilities = "<br>".join([f"CVE: {vuln}<br><br>" for vuln in vulnerabilities])
+                return (f"Top 10 vulnerabilidades basado a tiempo real:<br><br>{result_vulnerabilities}"
                         f"<br><a href='/'>Volver al inicio</a>")
             else:
                 return "Error: La respuesta no contiene una lista de vulnerabilidades."
@@ -129,7 +136,7 @@ def top_proveedores():
             if isinstance(proveedores, list) and len(proveedores) > 0:
                 proveedores = proveedores[:10]
                 result_proveedores = "<br>".join([f"Proveedor: {vuln}<br>" for vuln in proveedores])
-                return (f"Top 10 proveedores:<br>{result_proveedores}"
+                return (f"Top 10 proveedores:<br><br>{result_proveedores}"
                         f"<br><a href='/'>Volver al inicio</a>")
             else:
                 return "Error: La respuesta no contiene una lista de proveedores."
@@ -188,7 +195,6 @@ def login():
 def home():
     if 'user_id' in session:
         return (f"Bienvenido, usuario {session['user_id']}!"
-                f"<br><a href='/logout'>Cerrar sesión</a>"
                 f"<br><a href='/'>Volver al inicio</a>")
 
     return redirect(url_for('login'))
