@@ -7,7 +7,7 @@
       "es_mantenimiento": false,
       "satisfaccion_cliente": 6,
       "tipo_incidencia": 3,
-      "es_critico": fzalse,
+      "es_critico": false,
       "contactos_con_empleados": [
         {
           "id_emp": "103",
