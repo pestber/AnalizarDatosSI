@@ -1,12 +1,19 @@
 import sqlite3
+import joblib
 import pandas as pd
 import numpy as np
 import json
 import requests
 from flask import Flask, request, redirect, url_for,session, url_for, render_template
 from werkzeug.security import generate_password_hash, check_password_hash
-
+from datetime import datetime
 import ejercicios.ejercicio2ETL
+
+model_lr = joblib.load('modelos/model_lr.pkl')
+model_dt = joblib.load('modelos/model_dt.pkl')
+model_rf = joblib.load('modelos/model_rf.pkl')
+with open('columnas_modelo.json', 'r') as f:
+    expected_columns = json.load(f)
 app = Flask(__name__)
 app.secret_key = "secretkey"
 
@@ -33,14 +40,16 @@ def inicio():
     <li><a href="/top-vulnerabilidades">Vulnerabilidades, basado a tiempo real</a></li>
     <li><a href="/top-proveedores">Proveedores</a></li>
      
-     <h2>Incidencias</h2>
-     <li><a href="/tiempo-medio">Tiempo medio de resolución por tipo de incidencia</a></li>
+    <h2>Incidencias</h2>
+    <li><a href="/tiempo-medio">Tiempo medio de resolución por tipo de incidencia</a></li>
     
     <h2>Registro y Login</h2>
     <li><a href="/register">Registrar usuario</a></li>
     <li><a href="/login">Iniciar sesión</a></li>
     <li><a href="/home">Página de inicio</a></li>
-   
+    
+    <h2><a href="/predecir">Predecir Críticos</a></h2>
+    
     '''
 
 @app.route('/resultados')
@@ -208,6 +217,78 @@ def tiempo_medio():
     result = df.apply(lambda x: f"Tipo de incidencia: {x['tipo_incidencia']} - Tiempo promedio: {x['tiempo_promedio']:.2f} días", axis=1).str.cat(sep="<br>")
     return (f"Tiempo medio de resolución por tipo de incidencia:<br>{result}"
             f"<br><a href='/'>Volver al inicio</a>")
+
+
+
+@app.route('/predecir', methods=['GET', 'POST'])
+def algoritmosIA():
+    if request.method == 'POST':
+
+        cliente_id = request.form['cliente']
+        fecha_apertura = request.form['fecha_apertura']
+        fecha_cierre = request.form['fecha_cierre']
+        mantenimiento = 1 if request.form['mantenimiento'] == '1' else 0
+        tipo_incidente = int(request.form['tipo_incidente'])
+
+
+        tiempo_resolucion = (datetime.strptime(fecha_cierre, '%Y-%m-%d') - datetime.strptime(fecha_apertura, '%Y-%m-%d')).days
+
+        conn = sqlite3.connect('incidentes.db')
+        cursor = conn.cursor()
+        cursor.execute('SELECT COUNT(*) FROM tickets_emitidos WHERE id_cliente = ?', (cliente_id,))
+        total_incidencias = cursor.fetchone()[0]
+        conn.close()
+
+
+        input_data = pd.DataFrame([[total_incidencias, tiempo_resolucion, mantenimiento, tipo_incidente]], columns=['total_incidencias', 'tiempo_resolucion', 'mantenimiento', 'tipo_incidente'])
+        input_data = pd.get_dummies(input_data)
+
+
+        for col in expected_columns:
+            if col not in input_data.columns:
+                input_data[col] = 0
+        input_data = input_data[expected_columns]
+
+        metodo = request.form['metodo']
+        if metodo == 'lr':
+            prediction = model_lr.predict(input_data)[0]
+            prediction = 1 if prediction >= 0.5 else 0
+        elif metodo == 'dt':
+            prediction = model_dt.predict(input_data)[0]
+        else:
+            prediction = model_rf.predict(input_data)[0]
+
+
+        resultado = "CRÍTICO" if prediction == 1 or prediction==True else "NO CRÍTICO"
+
+        return f'''
+               <h3>Resultado: {resultado}</h3>
+               <a href="/">Volver</a>
+           '''
+
+    return ''' <form method="POST">
+      ID Cliente: <input type="text" name="cliente" placeholder="ID Cliente" required><br>
+      Fecha Inicio: <input type="date" name="fecha_apertura" required><br>
+      Fecha Fin:<input type="date" name="fecha_cierre" required><br>
+      Es mantenimiento:
+      <select name="mantenimiento">
+        <option value="1">Sí</option>
+        <option value="0">No</option>
+      </select><br>
+      Tipo de Incidente: <select name="tipo_incidente">
+        <option value="1">Tipo 1</option>
+        <option value="2">Tipo 2</option>
+        <option value="3">Tipo 3</option>
+      </select><br>
+      Algoritmo a usar:<select name="metodo">
+        <option value="lr">Regresión Lineal</option>
+        <option value="dt">Árbol de Decisión</option>
+        <option value="rf">Random Forest</option>
+      </select><br>
+      <button type="submit">Predecir</button>
+    </form>'''
+
+
 
 if __name__ == '__main__':
     app.run(debug=True)
